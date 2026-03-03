@@ -10,9 +10,7 @@
 </head>
 <body>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!--  PAGE AUTH                              -->
-  <!-- ═══════════════════════════════════════ -->
+  <!-- AUTH -->
   <div id="page-auth" class="auth-wrapper">
     <div class="auth-bg-grid"></div>
     <div class="auth-card">
@@ -20,14 +18,10 @@
         <span class="logo-icon">⬡</span>
         <span class="logo-text">PORTAIL<strong>OS</strong></span>
       </div>
-
-      <!-- Tabs -->
       <div class="auth-tabs">
         <button class="auth-tab active" onclick="switchTab('login')">Connexion</button>
         <button class="auth-tab" onclick="switchTab('register')">Inscription</button>
       </div>
-
-      <!-- Login -->
       <div id="tab-login" class="auth-form">
         <div class="form-group">
           <label>Identifiant</label>
@@ -43,12 +37,10 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </button>
       </div>
-
-      <!-- Register -->
       <div id="tab-register" class="auth-form hidden">
         <div class="form-group">
           <label>Code du portail</label>
-          <input type="text" id="reg-portail" placeholder="ex: A4CF127B3E91" style="font-family:'JetBrains Mono',monospace; text-transform:uppercase"/>
+          <input type="text" id="reg-portail" placeholder="ex: A4CF127B3E91" style="font-family:'JetBrains Mono',monospace;text-transform:uppercase"/>
         </div>
         <div class="form-group">
           <label>Identifiant</label>
@@ -68,12 +60,9 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════════════ -->
-  <!--  DASHBOARD                              -->
-  <!-- ═══════════════════════════════════════ -->
+  <!-- DASHBOARD -->
   <div id="page-dashboard" class="dashboard hidden">
 
-    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-logo">
         <span class="logo-icon">⬡</span>
@@ -81,30 +70,44 @@
       </div>
 
       <nav class="sidebar-nav">
-        <button class="nav-item active" onclick="showSection('mode')">
+        <button class="nav-item active non-admin" onclick="showSection('mode')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
           <span>Contrôle</span>
         </button>
-        <button class="nav-item" onclick="showSection('badges')">
+        <button class="nav-item non-admin" onclick="showSection('badges')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
           <span>Badges</span>
         </button>
-        <button class="nav-item" onclick="showSection('empreintes')">
+        <button class="nav-item non-admin" onclick="showSection('empreintes')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 11c0-1.1-.9-2-2-2s-2 .9-2 2v3"/><path d="M12 11c0-1.1.9-2 2-2s2 .9 2 2v3"/><path d="M8 14v3a4 4 0 0 0 8 0v-3"/><path d="M12 3C8.686 3 6 5.686 6 9"/><path d="M18 9c0-3.314-2.686-6-6-6"/></svg>
           <span>Empreintes</span>
         </button>
-        <button class="nav-item" onclick="showSection('codes')">
+        <button class="nav-item non-admin" onclick="showSection('codes')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
           <span>Codes</span>
         </button>
-        <button class="nav-item" onclick="showSection('logs')">
+        <button class="nav-item non-admin" onclick="showSection('logs')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
           <span>Logs</span>
         </button>
-        <button class="nav-item nav-item-chef hidden" id="nav-users" onclick="showSection('users')">
+        <button class="nav-item nav-item-chef hidden non-admin" id="nav-users" onclick="showSection('users')">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           <span>Utilisateurs</span>
           <span id="badge-attente" class="badge hidden">0</span>
+        </button>
+
+        <div class="nav-separator admin-only hidden"></div>
+        <button class="nav-item admin-only hidden" onclick="showSection('admin-portails')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          <span>Portails</span>
+        </button>
+        <button class="nav-item admin-only hidden" onclick="showSection('admin-users')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+          <span>Tous les users</span>
+        </button>
+        <button class="nav-item admin-only hidden" onclick="showSection('admin-logs')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Logs globaux</span>
         </button>
       </nav>
 
@@ -122,28 +125,23 @@
       </div>
     </aside>
 
-    <!-- MAIN -->
     <main class="main-content">
-
-      <!-- Header -->
       <header class="top-bar">
         <div class="top-bar-left">
           <span class="section-title" id="section-title">Contrôle</span>
         </div>
         <div class="top-bar-right">
-          <div class="portail-code">
+          <div class="portail-code non-admin">
             <span class="portail-label">PORTAIL</span>
             <span id="portail-id-display" class="mono">—</span>
           </div>
-          <div class="status-dot" id="status-dot" title="Statut connexion"></div>
+          <div class="status-dot" id="status-dot"></div>
         </div>
       </header>
 
-      <!-- ══ SECTION : CONTRÔLE ══ -->
+      <!-- CONTRÔLE -->
       <section id="section-mode" class="section active">
         <div class="cards-grid">
-
-          <!-- Mode actuel -->
           <div class="card card-large">
             <div class="card-header">
               <span class="card-title">Mode actuel</span>
@@ -154,19 +152,11 @@
               <div class="mode-name" id="mode-name">STANDBY</div>
             </div>
             <div class="mode-buttons chef-only">
-              <button class="btn-mode" onclick="setMode('STANDBY')">
-                <span>⏸</span> STANDBY
-              </button>
-              <button class="btn-mode" onclick="setMode('SCAN_BADGES')">
-                <span>📡</span> SCAN BADGES
-              </button>
-              <button class="btn-mode" onclick="setMode('SCAN_EMPREINTES')">
-                <span>👆</span> SCAN EMPREINTES
-              </button>
+              <button class="btn-mode" onclick="setMode('STANDBY')"><span>⏸</span> STANDBY</button>
+              <button class="btn-mode" onclick="setMode('SCAN_BADGES')"><span>📡</span> SCAN BADGES</button>
+              <button class="btn-mode" onclick="setMode('SCAN_EMPREINTES')"><span>👆</span> SCAN EMPREINTES</button>
             </div>
           </div>
-
-          <!-- Pulse -->
           <div class="card">
             <div class="card-header">
               <span class="card-title">Ouverture portail</span>
@@ -178,55 +168,36 @@
               OUVRIR
             </button>
           </div>
-
         </div>
       </section>
 
-      <!-- ══ SECTION : BADGES ══ -->
+      <!-- BADGES -->
       <section id="section-badges" class="section hidden">
         <div class="section-actions">
           <button class="btn-refresh" onclick="loadBadges()">↻ Actualiser</button>
         </div>
         <div class="table-wrapper">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>UID</th>
-                <th>Nom</th>
-                <th>Statut</th>
-                <th>Date</th>
-                <th class="chef-only">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="badges-tbody">
-              <tr><td colspan="5" class="table-empty">Chargement…</td></tr>
-            </tbody>
+            <thead><tr><th>UID</th><th>Nom</th><th>Statut</th><th>Date</th><th class="chef-only">Actions</th></tr></thead>
+            <tbody id="badges-tbody"><tr><td colspan="5" class="table-empty">Chargement…</td></tr></tbody>
           </table>
         </div>
       </section>
 
-      <!-- ══ SECTION : EMPREINTES ══ -->
+      <!-- EMPREINTES -->
       <section id="section-empreintes" class="section hidden">
         <div class="section-actions">
           <button class="btn-refresh" onclick="loadEmpreintes()">↻ Actualiser</button>
         </div>
         <div class="table-wrapper">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>ID Capteur</th>
-                <th>Nom</th>
-                <th>Date enregistrement</th>
-              </tr>
-            </thead>
-            <tbody id="empreintes-tbody">
-              <tr><td colspan="3" class="table-empty">Chargement…</td></tr>
-            </tbody>
+            <thead><tr><th>ID Capteur</th><th>Nom</th><th>Date enregistrement</th></tr></thead>
+            <tbody id="empreintes-tbody"><tr><td colspan="3" class="table-empty">Chargement…</td></tr></tbody>
           </table>
         </div>
       </section>
 
-      <!-- ══ SECTION : CODES ══ -->
+      <!-- CODES -->
       <section id="section-codes" class="section hidden">
         <div class="section-actions chef-only">
           <button class="btn-primary btn-sm" onclick="toggleAddCode()">+ Ajouter un code</button>
@@ -239,62 +210,36 @@
         </div>
         <div class="table-wrapper">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>Nom</th>
-                <th>Contenu</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody id="codes-tbody">
-              <tr><td colspan="3" class="table-empty">Chargement…</td></tr>
-            </tbody>
+            <thead><tr><th>Nom</th><th>Contenu</th><th>Date</th></tr></thead>
+            <tbody id="codes-tbody"><tr><td colspan="3" class="table-empty">Chargement…</td></tr></tbody>
           </table>
         </div>
       </section>
 
-      <!-- ══ SECTION : LOGS ══ -->
+      <!-- LOGS -->
       <section id="section-logs" class="section hidden">
         <div class="section-actions">
           <button class="btn-refresh" onclick="loadLogs()">↻ Actualiser</button>
         </div>
         <div class="table-wrapper">
           <table class="data-table">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Identifiant</th>
-                <th>Nom</th>
-                <th>Accès</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody id="logs-tbody">
-              <tr><td colspan="5" class="table-empty">Chargement…</td></tr>
-            </tbody>
+            <thead><tr><th>Type</th><th>Identifiant</th><th>Nom</th><th>Accès</th><th>Date</th></tr></thead>
+            <tbody id="logs-tbody"><tr><td colspan="5" class="table-empty">Chargement…</td></tr></tbody>
           </table>
         </div>
       </section>
 
-      <!-- ══ SECTION : UTILISATEURS ══ -->
+      <!-- UTILISATEURS (chef) -->
       <section id="section-users" class="section hidden">
         <div class="cards-grid">
-
-          <!-- En attente -->
           <div class="card">
-            <div class="card-header">
-              <span class="card-title">En attente d'approbation</span>
-            </div>
+            <div class="card-header"><span class="card-title">En attente d'approbation</span></div>
             <div id="users-pending-list" class="user-list">
               <p class="table-empty">Aucun utilisateur en attente</p>
             </div>
           </div>
-
-          <!-- Droits -->
           <div class="card">
-            <div class="card-header">
-              <span class="card-title">Accorder des droits</span>
-            </div>
+            <div class="card-header"><span class="card-title">Accorder des droits</span></div>
             <div class="form-group">
               <label>ID Utilisateur</label>
               <input type="number" id="droit-user-id" placeholder="ID de l'utilisateur"/>
@@ -310,16 +255,59 @@
             </div>
             <button class="btn-primary btn-sm" onclick="accorderDroit()">Accorder ce droit</button>
           </div>
+        </div>
+      </section>
 
+      <!-- ADMIN — PORTAILS -->
+      <section id="section-admin-portails" class="section hidden">
+        <div class="section-actions">
+          <button class="btn-primary btn-sm" onclick="toggleAddPortail()">+ Nouveau portail</button>
+          <button class="btn-refresh" onclick="loadAdminPortails()">↻ Actualiser</button>
+        </div>
+        <div id="add-portail-form" class="inline-form hidden">
+          <input type="text" id="portail-code" placeholder="Code unique (ex: A4CF127B3E91)" style="font-family:'JetBrains Mono',monospace;text-transform:uppercase"/>
+          <input type="text" id="portail-nom" placeholder="Nom du portail"/>
+          <button class="btn-primary btn-sm" onclick="createPortail()">Créer</button>
+          <button class="btn-ghost btn-sm" onclick="toggleAddPortail()">Annuler</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Code</th><th>Nom</th><th>Utilisateurs</th><th>Date création</th><th>Actions</th></tr></thead>
+            <tbody id="admin-portails-tbody"><tr><td colspan="5" class="table-empty">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ADMIN — UTILISATEURS -->
+      <section id="section-admin-users" class="section hidden">
+        <div class="section-actions">
+          <button class="btn-refresh" onclick="loadAdminUsers()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>Identifiant</th><th>Rôle</th><th>Portail</th><th>Approuvé</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="admin-users-tbody"><tr><td colspan="7" class="table-empty">Chargement…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ADMIN — LOGS GLOBAUX -->
+      <section id="section-admin-logs" class="section hidden">
+        <div class="section-actions">
+          <button class="btn-refresh" onclick="loadAdminLogs()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>Portail</th><th>Type</th><th>Identifiant</th><th>Nom</th><th>Accès</th><th>Date</th></tr></thead>
+            <tbody id="admin-logs-tbody"><tr><td colspan="6" class="table-empty">Chargement…</td></tr></tbody>
+          </table>
         </div>
       </section>
 
     </main>
   </div>
 
-  <!-- TOAST -->
   <div id="toast" class="toast hidden"></div>
-
   <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
