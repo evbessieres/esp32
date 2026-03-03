@@ -781,31 +781,6 @@ def admin_get_logs():
     } for r in rows])
 
 # ─────────────────────────────────────────
-# ROUTE SETUP ADMIN — SUPPRIMER APRÈS USAGE
-# ─────────────────────────────────────────
-@app.route('/setup-admin', methods=['GET'])
-def setup_admin():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute(
-        "SELECT id FROM utilisateurs WHERE identifiant = 'admin'"
-    )
-    if cur.fetchone():
-        cur.close()
-        conn.close()
-        return "Compte admin déjà existant !"
-    mdp = "AdminPortail2025!"
-    mdp_hash = bcrypt.hashpw(mdp.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-    cur.execute(
-        "INSERT INTO utilisateurs (identifiant, mot_de_passe_hash, portail_id, role, approuve) VALUES ('admin', %s, NULL, 'admin', TRUE)",
-        (mdp_hash,)
-    )
-    conn.commit()
-    cur.close()
-    conn.close()
-    return "Compte admin cree ! Identifiant : admin / Mot de passe : AdminPortail2025!"
-
-# ─────────────────────────────────────────
 # LANCEMENT
 # ─────────────────────────────────────────
 with app.app_context():
