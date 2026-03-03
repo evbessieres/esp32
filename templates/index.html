@@ -1,1 +1,325 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PortailOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
 
+  <!-- ═══════════════════════════════════════ -->
+  <!--  PAGE AUTH                              -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="page-auth" class="auth-wrapper">
+    <div class="auth-bg-grid"></div>
+    <div class="auth-card">
+      <div class="auth-logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">PORTAIL<strong>OS</strong></span>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">Connexion</button>
+        <button class="auth-tab" onclick="switchTab('register')">Inscription</button>
+      </div>
+
+      <!-- Login -->
+      <div id="tab-login" class="auth-form">
+        <div class="form-group">
+          <label>Identifiant</label>
+          <input type="text" id="login-id" placeholder="votre_identifiant" autocomplete="username"/>
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" id="login-mdp" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+        <div id="login-error" class="form-error hidden"></div>
+        <button class="btn-primary" onclick="doLogin()">
+          <span>Se connecter</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Register -->
+      <div id="tab-register" class="auth-form hidden">
+        <div class="form-group">
+          <label>Code du portail</label>
+          <input type="text" id="reg-portail" placeholder="ex: A4CF127B3E91" style="font-family:'JetBrains Mono',monospace; text-transform:uppercase"/>
+        </div>
+        <div class="form-group">
+          <label>Identifiant</label>
+          <input type="text" id="reg-id" placeholder="votre_identifiant"/>
+        </div>
+        <div class="form-group">
+          <label>Mot de passe</label>
+          <input type="password" id="reg-mdp" placeholder="••••••••"/>
+        </div>
+        <div id="register-error" class="form-error hidden"></div>
+        <div id="register-success" class="form-success hidden"></div>
+        <button class="btn-primary" onclick="doRegister()">
+          <span>Créer mon compte</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!--  DASHBOARD                              -->
+  <!-- ═══════════════════════════════════════ -->
+  <div id="page-dashboard" class="dashboard hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">PORTAIL<strong>OS</strong></span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="showSection('mode')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          <span>Contrôle</span>
+        </button>
+        <button class="nav-item" onclick="showSection('badges')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+          <span>Badges</span>
+        </button>
+        <button class="nav-item" onclick="showSection('empreintes')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 11c0-1.1-.9-2-2-2s-2 .9-2 2v3"/><path d="M12 11c0-1.1.9-2 2-2s2 .9 2 2v3"/><path d="M8 14v3a4 4 0 0 0 8 0v-3"/><path d="M12 3C8.686 3 6 5.686 6 9"/><path d="M18 9c0-3.314-2.686-6-6-6"/></svg>
+          <span>Empreintes</span>
+        </button>
+        <button class="nav-item" onclick="showSection('codes')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          <span>Codes</span>
+        </button>
+        <button class="nav-item" onclick="showSection('logs')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Logs</span>
+        </button>
+        <button class="nav-item nav-item-chef hidden" id="nav-users" onclick="showSection('users')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Utilisateurs</span>
+          <span id="badge-attente" class="badge hidden">0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar">?</div>
+          <div class="user-details">
+            <span id="user-name">—</span>
+            <span id="user-role" class="user-role-badge">—</span>
+          </div>
+        </div>
+        <button class="btn-logout" onclick="doLogout()" title="Déconnexion">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+
+      <!-- Header -->
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <span class="section-title" id="section-title">Contrôle</span>
+        </div>
+        <div class="top-bar-right">
+          <div class="portail-code">
+            <span class="portail-label">PORTAIL</span>
+            <span id="portail-id-display" class="mono">—</span>
+          </div>
+          <div class="status-dot" id="status-dot" title="Statut connexion"></div>
+        </div>
+      </header>
+
+      <!-- ══ SECTION : CONTRÔLE ══ -->
+      <section id="section-mode" class="section active">
+        <div class="cards-grid">
+
+          <!-- Mode actuel -->
+          <div class="card card-large">
+            <div class="card-header">
+              <span class="card-title">Mode actuel</span>
+              <span class="card-badge" id="mode-badge">STANDBY</span>
+            </div>
+            <div class="mode-display">
+              <div class="mode-icon" id="mode-icon">⏸</div>
+              <div class="mode-name" id="mode-name">STANDBY</div>
+            </div>
+            <div class="mode-buttons chef-only">
+              <button class="btn-mode" onclick="setMode('STANDBY')">
+                <span>⏸</span> STANDBY
+              </button>
+              <button class="btn-mode" onclick="setMode('SCAN_BADGES')">
+                <span>📡</span> SCAN BADGES
+              </button>
+              <button class="btn-mode" onclick="setMode('SCAN_EMPREINTES')">
+                <span>👆</span> SCAN EMPREINTES
+              </button>
+            </div>
+          </div>
+
+          <!-- Pulse -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Ouverture portail</span>
+            </div>
+            <p class="card-desc">Envoie un signal HAUT de <strong>500ms</strong> sur la broche de commande.</p>
+            <button class="btn-pulse chef-only" onclick="doPulse()" id="btn-pulse">
+              <span class="pulse-ring"></span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              OUVRIR
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ══ SECTION : BADGES ══ -->
+      <section id="section-badges" class="section hidden">
+        <div class="section-actions">
+          <button class="btn-refresh" onclick="loadBadges()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>UID</th>
+                <th>Nom</th>
+                <th>Statut</th>
+                <th>Date</th>
+                <th class="chef-only">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="badges-tbody">
+              <tr><td colspan="5" class="table-empty">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ══ SECTION : EMPREINTES ══ -->
+      <section id="section-empreintes" class="section hidden">
+        <div class="section-actions">
+          <button class="btn-refresh" onclick="loadEmpreintes()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID Capteur</th>
+                <th>Nom</th>
+                <th>Date enregistrement</th>
+              </tr>
+            </thead>
+            <tbody id="empreintes-tbody">
+              <tr><td colspan="3" class="table-empty">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ══ SECTION : CODES ══ -->
+      <section id="section-codes" class="section hidden">
+        <div class="section-actions chef-only">
+          <button class="btn-primary btn-sm" onclick="toggleAddCode()">+ Ajouter un code</button>
+        </div>
+        <div id="add-code-form" class="inline-form hidden chef-only">
+          <input type="text" id="code-nom" placeholder="Nom du code"/>
+          <input type="text" id="code-contenu" placeholder="Contenu / valeur"/>
+          <button class="btn-primary btn-sm" onclick="addCode()">Enregistrer</button>
+          <button class="btn-ghost btn-sm" onclick="toggleAddCode()">Annuler</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nom</th>
+                <th>Contenu</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="codes-tbody">
+              <tr><td colspan="3" class="table-empty">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ══ SECTION : LOGS ══ -->
+      <section id="section-logs" class="section hidden">
+        <div class="section-actions">
+          <button class="btn-refresh" onclick="loadLogs()">↻ Actualiser</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Identifiant</th>
+                <th>Nom</th>
+                <th>Accès</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody">
+              <tr><td colspan="5" class="table-empty">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ══ SECTION : UTILISATEURS ══ -->
+      <section id="section-users" class="section hidden">
+        <div class="cards-grid">
+
+          <!-- En attente -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">En attente d'approbation</span>
+            </div>
+            <div id="users-pending-list" class="user-list">
+              <p class="table-empty">Aucun utilisateur en attente</p>
+            </div>
+          </div>
+
+          <!-- Droits -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Accorder des droits</span>
+            </div>
+            <div class="form-group">
+              <label>ID Utilisateur</label>
+              <input type="number" id="droit-user-id" placeholder="ID de l'utilisateur"/>
+            </div>
+            <div class="form-group">
+              <label>Droit à accorder</label>
+              <select id="droit-select">
+                <option value="pulse">Ouverture portail</option>
+                <option value="scan">Changer le mode</option>
+                <option value="badges">Gérer les badges</option>
+                <option value="codes">Gérer les codes</option>
+              </select>
+            </div>
+            <button class="btn-primary btn-sm" onclick="accorderDroit()">Accorder ce droit</button>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
