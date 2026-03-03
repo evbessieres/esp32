@@ -629,20 +629,3 @@ with app.app_context():
 
 if __name__ == '__main__':
     app.run(debug=True)
-```
-
-**"Commit changes"** ✅
-
----
-
-## Résumé des nouvelles tables BDD
-```
-utilisateurs  → comptes, rôles, approbation
-portails      → chaque ESP32 avec son code unique
-droits        → droits supplémentaires accordés par le chef
-mode_actuel   → mode actif par portail
-commandes     → pulse etc. par portail
-codes         → codes enregistrés par portail
-badges        → UIDs RFID par portail
-empreintes    → empreintes digitales par portail
-logs_acces    → historique de tous les accès
