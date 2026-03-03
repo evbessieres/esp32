@@ -25,7 +25,6 @@ def init_db():
     conn = get_db()
     cur = conn.cursor()
 
-    # Portails (chaque ESP32 a un code unique)
     cur.execute('''
         CREATE TABLE IF NOT EXISTS portails (
             id SERIAL PRIMARY KEY,
@@ -35,7 +34,6 @@ def init_db():
         )
     ''')
 
-    # Utilisateurs
     cur.execute('''
         CREATE TABLE IF NOT EXISTS utilisateurs (
             id SERIAL PRIMARY KEY,
@@ -48,7 +46,6 @@ def init_db():
         )
     ''')
 
-    # Droits supplémentaires accordés par le chef
     cur.execute('''
         CREATE TABLE IF NOT EXISTS droits (
             id SERIAL PRIMARY KEY,
@@ -61,7 +58,6 @@ def init_db():
         )
     ''')
 
-    # Mode actuel de chaque portail
     cur.execute('''
         CREATE TABLE IF NOT EXISTS mode_actuel (
             id SERIAL PRIMARY KEY,
@@ -71,7 +67,6 @@ def init_db():
         )
     ''')
 
-    # Commandes (pulse etc.) par portail
     cur.execute('''
         CREATE TABLE IF NOT EXISTS commandes (
             id SERIAL PRIMARY KEY,
@@ -83,7 +78,6 @@ def init_db():
         )
     ''')
 
-    # Codes enregistrés par portail
     cur.execute('''
         CREATE TABLE IF NOT EXISTS codes (
             id SERIAL PRIMARY KEY,
@@ -95,7 +89,6 @@ def init_db():
         )
     ''')
 
-    # Badges RFID par portail
     cur.execute('''
         CREATE TABLE IF NOT EXISTS badges (
             id SERIAL PRIMARY KEY,
@@ -108,7 +101,6 @@ def init_db():
         )
     ''')
 
-    # Empreintes digitales par portail
     cur.execute('''
         CREATE TABLE IF NOT EXISTS empreintes (
             id SERIAL PRIMARY KEY,
@@ -120,7 +112,6 @@ def init_db():
         )
     ''')
 
-    # Logs d'accès
     cur.execute('''
         CREATE TABLE IF NOT EXISTS logs_acces (
             id SERIAL PRIMARY KEY,
@@ -138,7 +129,7 @@ def init_db():
     conn.close()
 
 # ─────────────────────────────────────────
-# DÉCORATEURS (vérification des droits)
+# DÉCORATEURS
 # ─────────────────────────────────────────
 def login_required(f):
     @wraps(f)
@@ -167,7 +158,6 @@ def chef_ou_droit_requis(droit):
                 cur.close()
                 conn.close()
                 return f(*args, **kwargs)
-            # Vérifie si le chef lui a accordé ce droit
             cur.execute(
                 "SELECT id FROM droits WHERE utilisateur_id = %s AND portail_id = %s AND droit = %s",
                 (session['user_id'], portail_id, droit)
@@ -182,6 +172,16 @@ def chef_ou_droit_requis(droit):
         return decorated
     return decorator
 
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if 'user_id' not in session:
+            return jsonify({"error": "Non connecté"}), 401
+        if session.get('role') != 'admin':
+            return jsonify({"error": "Accès réservé à l'admin"}), 403
+        return f(*args, **kwargs)
+    return decorated
+
 # ─────────────────────────────────────────
 # PAGE PRINCIPALE
 # ─────────────────────────────────────────
@@ -195,7 +195,7 @@ def index():
 @app.route('/api/auth/inscription', methods=['POST'])
 def inscription():
     data = request.json
-    identifiant = data.get('identifiant', '').strip()
+    identifiant  = data.get('identifiant', '').strip()
     mot_de_passe = data.get('mot_de_passe', '')
     code_portail = data.get('code_portail', '').strip().upper()
 
@@ -205,7 +205,6 @@ def inscription():
     conn = get_db()
     cur = conn.cursor()
 
-    # Vérifier que le portail existe
     cur.execute("SELECT id FROM portails WHERE code_unique = %s", (code_portail,))
     portail = cur.fetchone()
     if not portail:
@@ -215,30 +214,25 @@ def inscription():
 
     portail_id = portail[0]
 
-    # Vérifier que l'identifiant n'existe pas déjà
     cur.execute("SELECT id FROM utilisateurs WHERE identifiant = %s", (identifiant,))
     if cur.fetchone():
         cur.close()
         conn.close()
         return jsonify({"error": "Identifiant déjà utilisé"}), 409
 
-    # Hash du mot de passe
     mdp_hash = bcrypt.hashpw(mot_de_passe.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-    # Est-ce le premier utilisateur de ce portail ?
     cur.execute("SELECT COUNT(*) FROM utilisateurs WHERE portail_id = %s", (portail_id,))
     count = cur.fetchone()[0]
     est_premier = count == 0
-    role = 'chef' if est_premier else 'habitant'
+    role    = 'chef' if est_premier else 'habitant'
     approuve = True if est_premier else False
 
     cur.execute(
         "INSERT INTO utilisateurs (identifiant, mot_de_passe_hash, portail_id, role, approuve) VALUES (%s, %s, %s, %s, %s) RETURNING id",
         (identifiant, mdp_hash, portail_id, role, approuve)
     )
-    user_id = cur.fetchone()[0]
 
-    # Si premier → créer le mode STANDBY pour ce portail
     if est_premier:
         cur.execute(
             "INSERT INTO mode_actuel (portail_id, mode) VALUES (%s, 'STANDBY') ON CONFLICT (portail_id) DO NOTHING",
@@ -259,7 +253,7 @@ def inscription():
 @app.route('/api/auth/connexion', methods=['POST'])
 def connexion():
     data = request.json
-    identifiant = data.get('identifiant', '').strip()
+    identifiant  = data.get('identifiant', '').strip()
     mot_de_passe = data.get('mot_de_passe', '')
 
     conn = get_db()
@@ -274,15 +268,13 @@ def connexion():
 
     if not user:
         return jsonify({"error": "Identifiant ou mot de passe incorrect"}), 401
-
     if not bcrypt.checkpw(mot_de_passe.encode('utf-8'), user[1].encode('utf-8')):
         return jsonify({"error": "Identifiant ou mot de passe incorrect"}), 401
-
-    if not user[3]:
+    if not user[3] and user[2] != 'admin':
         return jsonify({"error": "Votre compte est en attente d'approbation"}), 403
 
-    session['user_id'] = user[0]
-    session['role'] = user[2]
+    session['user_id']   = user[0]
+    session['role']      = user[2]
     session['portail_id'] = user[4]
 
     return jsonify({"status": "ok", "role": user[2], "portail_id": user[4]})
@@ -313,7 +305,7 @@ def moi():
     return jsonify({"identifiant": user[0], "role": user[1], "portail_id": user[2], "inscription": str(user[3])})
 
 # ─────────────────────────────────────────
-# CHEF → Gérer les utilisateurs
+# CHEF — GÉRER LES UTILISATEURS
 # ─────────────────────────────────────────
 @app.route('/api/utilisateurs/en_attente', methods=['GET'])
 @login_required
@@ -391,6 +383,8 @@ def get_mode():
     row = cur.fetchone()
     cur.close()
     conn.close()
+    if not row:
+        return jsonify({"mode": "STANDBY", "depuis": ""})
     return jsonify({"mode": row[0], "depuis": str(row[1])})
 
 @app.route('/api/mode', methods=['POST'])
@@ -427,7 +421,7 @@ def pulse():
     return jsonify({"status": "ok"})
 
 # ─────────────────────────────────────────
-# COMMANDES PENDING (pour l'ESP32 en C++)
+# COMMANDES PENDING (pour l'ESP32)
 # ─────────────────────────────────────────
 @app.route('/api/commandes/pending', methods=['GET'])
 def get_commandes_pending():
@@ -454,7 +448,7 @@ def get_commandes_pending():
     return jsonify({"type": "RIEN"})
 
 # ─────────────────────────────────────────
-# MODE PENDING (pour l'ESP32 en C++)
+# MODE PENDING (pour l'ESP32)
 # ─────────────────────────────────────────
 @app.route('/api/mode/pending', methods=['GET'])
 def get_mode_pending():
@@ -620,6 +614,196 @@ def get_logs():
     cur.close()
     conn.close()
     return jsonify([{"id": r[0], "type": r[1], "identifiant": r[2], "nom": r[3], "acces_accorde": r[4], "date": str(r[5])} for r in rows])
+
+# ─────────────────────────────────────────
+# ADMIN — PORTAILS
+# ─────────────────────────────────────────
+@app.route('/api/admin/portails', methods=['GET'])
+@admin_required
+def admin_get_portails():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('''
+        SELECT p.id, p.code_unique, p.nom, p.date_creation,
+               COUNT(u.id) as nb_utilisateurs
+        FROM portails p
+        LEFT JOIN utilisateurs u ON u.portail_id = p.id
+        GROUP BY p.id
+        ORDER BY p.date_creation DESC
+    ''')
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return jsonify([{
+        "id": r[0], "code_unique": r[1], "nom": r[2],
+        "date": str(r[3]), "nb_utilisateurs": r[4]
+    } for r in rows])
+
+@app.route('/api/admin/portails', methods=['POST'])
+@admin_required
+def admin_create_portail():
+    data = request.json
+    code = data.get('code_unique', '').strip().upper()
+    nom  = data.get('nom', 'Nouveau Portail').strip()
+    if not code:
+        return jsonify({"error": "Code unique obligatoire"}), 400
+    conn = get_db()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            "INSERT INTO portails (code_unique, nom) VALUES (%s, %s) RETURNING id",
+            (code, nom)
+        )
+        portail_id = cur.fetchone()[0]
+        cur.execute(
+            "INSERT INTO mode_actuel (portail_id, mode) VALUES (%s, 'STANDBY')",
+            (portail_id,)
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"status": "ok", "id": portail_id})
+    except Exception:
+        conn.rollback()
+        cur.close()
+        conn.close()
+        return jsonify({"error": "Code déjà utilisé"}), 409
+
+@app.route('/api/admin/portails/<int:portail_id>', methods=['DELETE'])
+@admin_required
+def admin_delete_portail(portail_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM logs_acces   WHERE portail_id = %s", (portail_id,))
+    cur.execute("DELETE FROM empreintes   WHERE portail_id = %s", (portail_id,))
+    cur.execute("DELETE FROM badges       WHERE portail_id = %s", (portail_id,))
+    cur.execute("DELETE FROM codes        WHERE portail_id = %s", (portail_id,))
+    cur.execute("DELETE FROM commandes    WHERE portail_id = %s", (portail_id,))
+    cur.execute("DELETE FROM mode_actuel  WHERE portail_id = %s", (portail_id,))
+    cur.execute("DELETE FROM droits       WHERE portail_id = %s", (portail_id,))
+    cur.execute("DELETE FROM utilisateurs WHERE portail_id = %s", (portail_id,))
+    cur.execute("DELETE FROM portails     WHERE id = %s",         (portail_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"status": "ok"})
+
+# ─────────────────────────────────────────
+# ADMIN — UTILISATEURS
+# ─────────────────────────────────────────
+@app.route('/api/admin/utilisateurs', methods=['GET'])
+@admin_required
+def admin_get_utilisateurs():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('''
+        SELECT u.id, u.identifiant, u.role, u.approuve,
+               u.date_inscription, p.nom, p.code_unique
+        FROM utilisateurs u
+        LEFT JOIN portails p ON u.portail_id = p.id
+        ORDER BY u.date_inscription DESC
+    ''')
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return jsonify([{
+        "id": r[0], "identifiant": r[1], "role": r[2],
+        "approuve": r[3], "date": str(r[4]),
+        "portail_nom": r[5], "portail_code": r[6]
+    } for r in rows])
+
+@app.route('/api/admin/utilisateurs/<int:user_id>', methods=['DELETE'])
+@admin_required
+def admin_delete_utilisateur(user_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM droits       WHERE utilisateur_id = %s", (user_id,))
+    cur.execute("DELETE FROM utilisateurs WHERE id = %s",             (user_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"status": "ok"})
+
+@app.route('/api/admin/utilisateurs/<int:user_id>/promouvoir', methods=['POST'])
+@admin_required
+def admin_promouvoir(user_id):
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("UPDATE utilisateurs SET role = 'chef' WHERE id = %s", (user_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"status": "ok"})
+
+@app.route('/api/admin/utilisateurs/<int:user_id>/reset-mdp', methods=['POST'])
+@admin_required
+def admin_reset_mdp(user_id):
+    data    = request.json
+    nouveau = data.get('mot_de_passe', '')
+    if not nouveau:
+        return jsonify({"error": "Mot de passe vide"}), 400
+    mdp_hash = bcrypt.hashpw(nouveau.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE utilisateurs SET mot_de_passe_hash = %s WHERE id = %s",
+        (mdp_hash, user_id)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify({"status": "ok"})
+
+# ─────────────────────────────────────────
+# ADMIN — LOGS GLOBAUX
+# ─────────────────────────────────────────
+@app.route('/api/admin/logs', methods=['GET'])
+@admin_required
+def admin_get_logs():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('''
+        SELECT l.id, l.type, l.identifiant, l.nom,
+               l.acces_accorde, l.date_acces,
+               p.nom, p.code_unique
+        FROM logs_acces l
+        LEFT JOIN portails p ON l.portail_id = p.id
+        ORDER BY l.date_acces DESC
+        LIMIT 100
+    ''')
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return jsonify([{
+        "id": r[0], "type": r[1], "identifiant": r[2],
+        "nom": r[3], "acces_accorde": r[4], "date": str(r[5]),
+        "portail_nom": r[6], "portail_code": r[7]
+    } for r in rows])
+
+# ─────────────────────────────────────────
+# ROUTE SETUP ADMIN — SUPPRIMER APRÈS USAGE
+# ─────────────────────────────────────────
+@app.route('/setup-admin', methods=['GET'])
+def setup_admin():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT id FROM utilisateurs WHERE identifiant = 'admin'"
+    )
+    if cur.fetchone():
+        cur.close()
+        conn.close()
+        return "Compte admin déjà existant !"
+    mdp = "AdminPortail2025!"
+    mdp_hash = bcrypt.hashpw(mdp.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    cur.execute(
+        "INSERT INTO utilisateurs (identifiant, mot_de_passe_hash, portail_id, role, approuve) VALUES ('admin', %s, NULL, 'admin', TRUE)",
+        (mdp_hash,)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+    return "Compte admin cree ! Identifiant : admin / Mot de passe : AdminPortail2025!"
 
 # ─────────────────────────────────────────
 # LANCEMENT
